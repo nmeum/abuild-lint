@@ -11,6 +11,16 @@ func IsSpace(r rune) bool {
 	return r == ' '
 }
 
+func isMetaVar(varname string) bool {
+	for _, v := range metadataVariables {
+		if v == varname {
+			return true
+		}
+	}
+
+	return false
+}
+
 func IsDir(fn string) bool {
 	fi, err := os.Stat(fn)
 	return err == nil && fi.IsDir()

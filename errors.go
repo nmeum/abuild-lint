@@ -1,6 +1,9 @@
 package main
 
 const (
+	variableUnused   = "Global variable %q is unused"
+	nonLocalVariable = "Variable %q was not declared using the local keyword"
+
 	badCommentPrefix   = "Comment doesn't start with a space"
 	missingMaintainer  = "Maintainer is missing"
 	missingAddress     = "Comment is missing an RFC 5322 address"

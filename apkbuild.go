@@ -71,3 +71,35 @@ func (a *APKBUILD) visit(node syntax.Node) bool {
 		return true
 	}
 }
+
+func (a *APKBUILD) IsGlobalVar(varname string) bool {
+	for _, assignment := range a.Assignments {
+		if assignment.Name.Value == varname {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (a *APKBUILD) UnusedVariable(name string) bool {
+	ret := true
+	a.Walk(func(node syntax.Node) bool {
+		switch x := node.(type) {
+		case *syntax.SglQuoted:
+			if x.Dollar && x.Value == name {
+				ret = false
+				return false
+			}
+		case *syntax.ParamExp:
+			if x.Param.Value == name {
+				ret = false
+				return false
+			}
+		}
+
+		return true
+	})
+
+	return ret
+}
