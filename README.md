@@ -1,16 +1,37 @@
-https://pads.reis.asia/p/abuild-lint
-
 # abuild-lint
 
 A linting utility for Alpine Linux APKBUILDs.
 
 ## Scope
 
-TODO.
+Alpine Linux currently doesn't have a policy document describing how
+APKBUILDs should be written. This tool tries to enforce some of
+unwritten style practises and thus make it easier for contributors to
+check their APKBUILDs for mistakes regarding style. It is not intended
+to replace a policy document though.
 
 ## Installation
 
-TODO.
+abuild-lint can be installed easily using:
+
+	$ git clone --recursive git://git.8pit.net/abuild-lint.git
+	$ (cd abuild-lint && go install)
+
+## Documentation
+
+End user documentation, which also documents which checks are performed
+by abuild-lint, is available in the form of a man page.
+
+The source code itself is documented using the standard go documentation
+format. The documentation can be viewed using:
+
+	$ go doc -cmd -u
+
+## Tests
+
+abuild-lint comes with a unit testsuite which can be run using:
+
+	$ go test
 
 ## FAQ
 
@@ -27,4 +48,15 @@ correctness.
 
 ## License
 
-TODO.
+This program is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+Public License for more details.
+
+You should have received a copy of the GNU General Public License along
+with this program. If not, see <http://www.gnu.org/licenses/>.
