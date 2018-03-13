@@ -166,14 +166,13 @@ func (l *Linter) lintAddressComments(prefix string) int {
 			continue
 		}
 
-		sep := strings.Index(c.Text[1:], " ")
-		if sep == -1 {
+		idx := len(prefix)
+		if c.Text[idx] != ' ' {
 			l.error(c.Pos(), noAddressSeperator)
 			continue
 		}
-		sep++ // first character of c.Text was skipped
 
-		_, err := mail.ParseAddress(c.Text[sep+1:])
+		_, err := mail.ParseAddress(c.Text[idx+1:])
 		if err != nil {
 			l.error(c.Pos(), invalidAddress)
 			continue

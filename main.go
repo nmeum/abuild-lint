@@ -39,7 +39,13 @@ func main() {
 
 	var abuilds []*APKBUILD
 	for _, fn := range fns {
-		abuild, err := Parse(fn)
+		file, err := os.Open(fn)
+		if err != nil {
+			panic(err)
+		}
+		defer file.Close()
+
+		abuild, err := Parse(file, fn)
 		if err != nil {
 			panic(err)
 		}

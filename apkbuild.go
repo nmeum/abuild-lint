@@ -1,8 +1,8 @@
 package main
 
 import (
+	"io"
 	"mvdan.cc/sh/syntax"
-	"os"
 )
 
 const (
@@ -27,16 +27,11 @@ type APKBUILD struct {
 	Functions map[string]syntax.FuncDecl
 }
 
-func Parse(fp string) (*APKBUILD, error) {
+func Parse(r io.Reader, name string) (*APKBUILD, error) {
 	parser := syntax.NewParser(syntax.KeepComments,
 		syntax.Variant(lang))
 
-	file, err := os.Open(fp)
-	if err != nil {
-		return nil, err
-	}
-
-	prog, err := parser.Parse(file, fp)
+	prog, err := parser.Parse(r, name)
 	if err != nil {
 		return nil, err
 	}
