@@ -1,0 +1,3 @@
+[submodule "vendor/mvdan.cc/sh"]
+	path = vendor/mvdan.cc/sh
+	url = git://github.com/mvdan/sh.git
