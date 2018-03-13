@@ -105,7 +105,7 @@ func (l *Linter) lintGlobalVariables() {
 				continue
 			}
 
-			if l.f.UnusedVariable(v) {
+			if l.f.IsUnusedVar(v) {
 				l.errorf(syntax.Pos{}, variableUnused, v)
 			}
 		}

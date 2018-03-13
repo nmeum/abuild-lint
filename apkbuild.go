@@ -82,17 +82,17 @@ func (a *APKBUILD) IsGlobalVar(varname string) bool {
 	return false
 }
 
-func (a *APKBUILD) UnusedVariable(name string) bool {
+func (a *APKBUILD) IsUnusedVar(varname string) bool {
 	ret := true
 	a.Walk(func(node syntax.Node) bool {
 		switch x := node.(type) {
 		case *syntax.SglQuoted:
-			if x.Dollar && x.Value == name {
+			if x.Dollar && x.Value == varname {
 				ret = false
 				return false
 			}
 		case *syntax.ParamExp:
-			if x.Param.Value == name {
+			if x.Param.Value == varname {
 				ret = false
 				return false
 			}
