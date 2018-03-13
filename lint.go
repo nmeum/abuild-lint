@@ -99,7 +99,7 @@ func (l *Linter) lintContributers() {
 func (l *Linter) lintGlobalVariables() {
 	for _, a := range l.f.Assignments {
 		v := a.Name.Value
-		if !isMetaVar(v) {
+		if !IsMetaVar(v) {
 			if v[0] != '_' {
 				l.error(a.Pos(), invalidGlobalVar)
 				continue
@@ -136,7 +136,7 @@ func (l *Linter) lintLocalVariables() {
 				}
 
 				v := x.Name.Value
-				if !(l.f.IsGlobalVar(v) || isMetaVar(v)) {
+				if !(l.f.IsGlobalVar(v) || IsMetaVar(v)) {
 					l.errorf(x.Pos(), nonLocalVariable, v)
 				}
 			}
