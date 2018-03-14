@@ -3,6 +3,7 @@ package main
 const (
 	variableUnused   = "Global variable %q is unused"
 	nonLocalVariable = "Variable %q was not declared using the local keyword"
+	wrongFuncOrder   = "Function %q should be declared after function %q"
 
 	badCommentPrefix    = "Comment doesn't start with a space"
 	missingMaintainer   = "Maintainer is missing"

@@ -44,6 +44,20 @@ var metadataVariables = []string{
 	"install_if",
 }
 
+// Array containing all functions which can be declared by an APKBUILD
+// and are then called from abuild(1). The function should be added in
+// the order they are called by abuild(1).
+var packageFunctions = []string{
+	"snapshot",
+	"sanitycheck",
+	"fetch",
+	"unpack",
+	"prepare",
+	"build",
+	"check",
+	"package",
+}
+
 type Linter struct {
 	v bool
 	f *APKBUILD
@@ -66,7 +80,7 @@ func (l *Linter) Lint() {
 	// XXX: maybe check order of metadata variables
 
 	// TODO: check that helper functions are prefixed with an _
-	// TODO: check for function order build -> check -> package
+	l.lintFunctionOrder()
 
 	// TODO: check for forbidden bashisms
 }
@@ -175,6 +189,28 @@ func (l *Linter) lintLocalVariables() {
 
 		syntax.Walk(&f, fn)
 	}
+}
+
+// lintFunctionOrder checks that all package functions are declared in
+// the order they are called by abuild(1).
+func (l *Linter) lintFunctionOrder() {
+	var seen []*syntax.FuncDecl
+	for _, fn := range packageFunctions {
+		decl, ok := l.f.Functions[fn]
+		if !ok {
+			continue
+		}
+
+		for _, s := range seen {
+			if !decl.Pos().After(s.Pos()) {
+				l.errorf(decl.Pos(), wrongFuncOrder,
+					decl.Name.Value, s.Name.Value)
+			}
+		}
+		seen = append(seen, &decl)
+	}
+
+	// TODO: check subpackage functions
 }
 
 // lintAddressComments checks all global comments which start with given

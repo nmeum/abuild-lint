@@ -219,6 +219,39 @@ local bar=456
 		Msg{2, 1, fmt.Sprintf(nonLocalVariable, "foo")})
 }
 
+func TestLintFunctionOrder(t *testing.T) {
+	t.Run("wrongFuncOrder", func(t *testing.T) {
+		input := `package() {
+}
+build() {
+}`
+
+		l := newLinter(input)
+		l.lintFunctionOrder()
+
+		expMsg(t,
+			Msg{1, 1, fmt.Sprintf(wrongFuncOrder, "package", "build")})
+	})
+
+	t.Run("rightFuncOrder", func(t *testing.T) {
+		input := `prepare() {
+}
+build() {
+}
+check() {
+}
+package() {
+}`
+
+		l := newLinter(input)
+		l.lintFunctionOrder()
+
+		if l.v {
+			t.Fail()
+		}
+	})
+}
+
 func TestMain(m *testing.M) {
 	setup()
 	os.Exit(m.Run())
