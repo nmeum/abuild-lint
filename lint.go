@@ -53,9 +53,22 @@ func (l *Linter) Lint() {
 	l.lintComments()
 	l.lintMaintainer()
 	l.lintContributers()
+	// TODO: check for contributor comments with same address
+	// TODO: check that contributor comments come before maintainer
+	// TODO: check that maintainer comment comes before first assignment
 
 	l.lintGlobalVariables()
 	l.lintLocalVariables()
+	// TODO: check that $(…) isn't used in global variables
+	// TODO: check that $foo is used instead of ${foo} when possible
+	// TODO: check that there are no empty lines between metadata assignments
+	// XXX: maybe check that certain metadata variables are always declared
+	// XXX: maybe check order of metadata variables
+
+	// TODO: check that helper functions are prefixed with an _
+	// TODO: check for function order build -> check -> package
+
+	// TODO: check for forbidden bashisms
 }
 
 // lintComments checks that all comments start with a space. Shebangs
