@@ -58,8 +58,8 @@ func (l *Linter) Lint() {
 	// TODO: check that maintainer comment comes before first assignment
 
 	l.lintGlobalVariables()
+	l.lintGlobalCallExprs()
 	l.lintLocalVariables()
-	// TODO: check that $(…) isn't used in global variables
 	// TODO: check that $foo is used instead of ${foo} when possible
 	// TODO: check that there are no empty lines between metadata assignments
 	// XXX: maybe check that certain metadata variables are always declared
@@ -123,7 +123,23 @@ func (l *Linter) lintGlobalVariables() {
 			}
 		}
 	}
+}
 
+// lintGlobalCallExprs check that all global shell statements don't use
+// any kind of call expressions.
+func (l *Linter) lintGlobalCallExprs() {
+	l.f.Walk(func(node syntax.Node) bool {
+		switch x := node.(type) {
+		case *syntax.CallExpr:
+			if len(x.Args) > 0 {
+				l.error(node.Pos(), callExprInGlobalVar)
+			}
+		case *syntax.FuncDecl:
+			return false
+		}
+
+		return true
+	})
 }
 
 // lintLocalVariables checks that all variables declared inside a

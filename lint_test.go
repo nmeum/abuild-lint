@@ -182,6 +182,25 @@ pkgver=$_bar`
 		Msg{0, 0, fmt.Sprintf(variableUnused, "_foo")})
 }
 
+func TestLintGlobalCallExprs(t *testing.T) {
+	input := `pkgname=bar
+_bar=$(ls)
+f1() {
+local v1=${_bar}
+}
+_baz=$(cp -h)
+f2() {
+local v2=${_baz}
+}`
+
+	l := newLinter(input)
+	l.lintGlobalCallExprs()
+
+	expMsg(t,
+		Msg{2, 8, callExprInGlobalVar},
+		Msg{6, 8, callExprInGlobalVar})
+}
+
 func TestLintLocalVariables(t *testing.T) {
 	input := `f1() {
 foo=123
