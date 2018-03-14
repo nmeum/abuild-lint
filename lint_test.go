@@ -121,9 +121,14 @@ func TestLintAddressComments(t *testing.T) {
 # foo: …`
 
 	l := newLinter(input)
-	r := l.lintAddressComments(" foo:")
-	if r != 5 || !l.v {
+	n, addrs := l.lintAddressComments(" foo:")
+	if n != 5 || len(addrs) != 1 || !l.v {
 		t.Fail()
+	}
+
+	if addrs[0].a.String() != "\"foo bar\" <foo@bar.com>" {
+		t.Fatalf("Expected %q - got %q", "foo",
+			addrs[0].a.String())
 	}
 
 	expMsg(t,
@@ -133,38 +138,59 @@ func TestLintAddressComments(t *testing.T) {
 		Msg{6, 1, invalidAddress})
 }
 
-func TestLintMaintainer(t *testing.T) {
+func TestLintMaintainerAndContributors(t *testing.T) {
 	t.Run("missingMaintainer", func(t *testing.T) {
 		l := newLinter("")
-		l.lintMaintainer()
+		l.lintMaintainerAndContributors()
 		expMsg(t, Msg{0, 0, missingMaintainer})
+	})
+
+	t.Run("tooManyMaintainers", func(t *testing.T) {
+		l := newLinter(`# Maintainer: A <a@a>
+# Maintainer: B <b@b>`)
+		l.lintMaintainerAndContributors()
+		expMsg(t, Msg{2, 1, tooManyMaintainers})
+	})
+
+	t.Run("maintainerAfterAssign", func(t *testing.T) {
+		l := newLinter(`pkgname=foo
+# Maintainer: A <a@b>`)
+		l.lintMaintainerAndContributors()
+		expMsg(t, Msg{2, 1, maintainerAfterAssign})
+	})
+
+	t.Run("wrongAddrCommentOrder", func(t *testing.T) {
+		l := newLinter(`# Maintainer: A <a@b>
+# Contributor: B <b@c>`)
+		l.lintMaintainerAndContributors()
+		expMsg(t, Msg{2, 1, wrongAddrCommentOrder})
+	})
+
+	t.Run("repeatedAddrComment", func(t *testing.T) {
+		l := newLinter(`# Contributor: A <a@b>
+# Contributor: A <a@b>
+# Maintainer: M <m@m>`)
+		l.lintMaintainerAndContributors()
+		expMsg(t, Msg{2, 1, repeatedAddrComment})
 	})
 
 	t.Run("oneMaintainer", func(t *testing.T) {
 		l := newLinter("# Maintainer: J <a@k>")
-		l.lintMaintainer()
+		l.lintMaintainerAndContributors()
 		if l.v {
 			t.Fail()
 		}
 	})
 
-	t.Run("tooManyMaintainers", func(t *testing.T) {
-		l := newLinter(`# Maintainer: foo <foo@bar>
-# Maintainer: bar <bar@foo>`)
-		l.lintMaintainer()
-		expMsg(t, Msg{0, 0, tooManyMaintainers})
+	t.Run("oneMaintainerAndContributors", func(t *testing.T) {
+		l := newLinter(`# Contributor: A <a@a>
+# Contributor: B <b@b>
+# Maintainer: C <c@c>`)
+		l.lintMaintainerAndContributors()
+		if l.v {
+			t.Fail()
+		}
 	})
-}
-
-func TestLintContributors(t *testing.T) {
-	input := `# Contributor: Mark <mark@example.com>
-# Contributor: Peter <peter@example.org>`
-
-	l := newLinter(input)
-	l.lintContributers()
-	if l.v {
-		t.Fail()
-	}
 }
 
 func TestListGlobalVariables(t *testing.T) {

@@ -58,6 +58,11 @@ var packageFunctions = []string{
 	"package",
 }
 
+type addressComment struct {
+	c syntax.Comment
+	a *mail.Address
+}
+
 type Linter struct {
 	v bool
 	f *APKBUILD
@@ -65,11 +70,7 @@ type Linter struct {
 
 func (l *Linter) Lint() {
 	l.lintComments()
-	l.lintMaintainer()
-	l.lintContributers()
-	// TODO: check for contributor comments with same address
-	// TODO: check that contributor comments come before maintainer
-	// TODO: check that maintainer comment comes before first assignment
+	l.lintMaintainerAndContributors()
 
 	l.lintGlobalVariables()
 	l.lintGlobalCallExprs()
@@ -99,23 +100,48 @@ func (l *Linter) lintComments() {
 	})
 }
 
-// lintMaintainer checks the global APKBUILD maintainer comment. It
-// complains if there is not exactly one maintainer comment or if the
-// maintainer comment is invalid.
-func (l *Linter) lintMaintainer() {
-	n := l.lintAddressComments(maintainerPrefix)
+// lintMaintainerAndContributors checks the APKBUILD maintainer and
+// contributor comments. It complains if there is not exactly one
+// maintainer comment, if the address specified in a maintainer or
+// contributors comment doesn't conform to RFC 5322.
+//
+// Besides it checks that contributor comments are declared before
+// maintainer comments and that contributor comments aren't declared
+// twice. Regarding the order of the comments it also checks that the
+// maintainer comment is declared before the first variable assignment.
+func (l *Linter) lintMaintainerAndContributors() {
+	var maintainer *addressComment
+	n, m := l.lintAddressComments(maintainerPrefix)
 	if n == 0 {
 		l.error(syntax.Pos{}, missingMaintainer)
 	} else if n > 1 {
-		l.error(syntax.Pos{}, tooManyMaintainers)
+		l.error(m[len(m)-1].c.Pos(), tooManyMaintainers)
+	} else { // n == 1
+		maintainer = &m[0]
 	}
-}
 
-// lintContributers checks the global APKBUILD contributor comments. It
-// does the same job as lintMaintainer except that doesn't complain if
-// none ore more than one contributor comments are found.
-func (l *Linter) lintContributers() {
-	l.lintAddressComments(contributorPrefix)
+	if maintainer != nil && len(l.f.Assignments) > 0 &&
+		maintainer.c.Pos().After(l.f.Assignments[0].Pos()) {
+		l.error(maintainer.c.Pos(), maintainerAfterAssign)
+	}
+
+	addrMap := make(map[string]bool)
+	_, contributors := l.lintAddressComments(contributorPrefix)
+	for _, c := range contributors {
+		pos := c.c.Pos()
+		if maintainer != nil && pos.After(maintainer.c.Pos()) {
+			l.error(pos, wrongAddrCommentOrder)
+		}
+
+		_, ok := addrMap[c.a.String()]
+		if ok {
+			l.error(pos, repeatedAddrComment)
+		} else {
+			addrMap[c.a.String()] = true
+		}
+	}
+
+	// TODO: check for same address in contributor and maintainer?
 }
 
 // lintGlobalVariables checks that all declared globally declared
@@ -217,8 +243,10 @@ func (l *Linter) lintFunctionOrder() {
 // prefix followed by an ascii space character and makes sure that they
 // contain a valid RFC 5322 mail address. It returns the amount of
 // comment that started with the given prefix.
-func (l *Linter) lintAddressComments(prefix string) int {
+func (l *Linter) lintAddressComments(prefix string) (int, []addressComment) {
 	var amount int
+	var comments []addressComment
+
 	for _, c := range l.f.Comments {
 		if !strings.HasPrefix(c.Text, prefix) {
 			continue
@@ -237,14 +265,16 @@ func (l *Linter) lintAddressComments(prefix string) int {
 			continue
 		}
 
-		_, err := mail.ParseAddress(c.Text[idx+1:])
+		a, err := mail.ParseAddress(c.Text[idx+1:])
 		if err != nil {
 			l.error(c.Pos(), invalidAddress)
 			continue
 		}
+
+		comments = append(comments, addressComment{c, a})
 	}
 
-	return amount
+	return amount, comments
 }
 
 func (l *Linter) errorf(pos syntax.Pos, format string,
