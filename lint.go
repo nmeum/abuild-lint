@@ -74,7 +74,7 @@ func (l *Linter) Lint() {
 	l.lintMaintainerAndContributors()
 
 	l.lintGlobalVariables()
-	l.lintGlobalCallExprs()
+	l.lintGlobalCmdSubsts()
 	l.lintLocalVariables()
 	l.lintParamExpression()
 	// TODO: check that there are no empty lines between metadata assignments
@@ -166,15 +166,13 @@ func (l *Linter) lintGlobalVariables() {
 	}
 }
 
-// lintGlobalCallExprs check that all global shell statements don't use
+// lintGlobalCmdSubsts check that all global shell statements don't use
 // any kind of call expressions.
-func (l *Linter) lintGlobalCallExprs() {
+func (l *Linter) lintGlobalCmdSubsts() {
 	l.f.Walk(func(node syntax.Node) bool {
-		switch x := node.(type) {
-		case *syntax.CallExpr:
-			if len(x.Args) > 0 {
-				l.error(node.Pos(), callExprInGlobalVar)
-			}
+		switch node.(type) {
+		case *syntax.CmdSubst:
+			l.error(node.Pos(), callExprInGlobalVar)
 		case *syntax.FuncDecl:
 			return false
 		}

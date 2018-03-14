@@ -242,7 +242,7 @@ __foo=bar`
 		Msg{6, 1, invalidGlobalVar})
 }
 
-func TestLintGlobalCallExprs(t *testing.T) {
+func TestLintGlobalCmdSubsts(t *testing.T) {
 	input := `pkgname=bar
 _bar=$(ls)
 f1() {
@@ -251,14 +251,15 @@ local v1=${_bar}
 _baz=$(cp -h)
 f2() {
 local v2=${_baz}
-}`
+}
+_baz=${foo} bar`
 
 	l := newLinter(input)
-	l.lintGlobalCallExprs()
+	l.lintGlobalCmdSubsts()
 
 	expMsg(t,
-		Msg{2, 8, callExprInGlobalVar},
-		Msg{6, 8, callExprInGlobalVar})
+		Msg{2, 6, callExprInGlobalVar},
+		Msg{6, 6, callExprInGlobalVar})
 }
 
 func TestLintLocalVariables(t *testing.T) {
