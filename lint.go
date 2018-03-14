@@ -29,6 +29,7 @@ var metadataVariables = []string{
 	"arch",
 	"license",
 	"depends",
+	"depends_dev",
 	"makedepends",
 	"checkdepends",
 	"install",
