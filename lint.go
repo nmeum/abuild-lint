@@ -84,6 +84,9 @@ func (l *Linter) Lint() {
 	// TODO: check that helper functions are prefixed with an _
 	l.lintFunctionOrder()
 
+	// TODO: check that checksum are declared at the end of a file
+	// TODO: check for space between last function declaration and checksum
+
 	// TODO: check for forbidden bashisms
 }
 
@@ -117,7 +120,9 @@ func (l *Linter) lintMaintainerAndContributors() {
 		l.error(syntax.Pos{}, missingMaintainer)
 	} else if n > 1 {
 		l.error(m[len(m)-1].c.Pos(), tooManyMaintainers)
-	} else { // n == 1
+	}
+
+	if len(m) >= 1 {
 		maintainer = &m[0]
 	}
 

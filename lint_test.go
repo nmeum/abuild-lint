@@ -177,6 +177,12 @@ func TestLintMaintainerAndContributors(t *testing.T) {
 		expMsg(t, Msg{0, 0, missingMaintainer})
 	})
 
+	t.Run("emptyMaintainer", func(t *testing.T) {
+		l := newLinter("# Maintainer:")
+		l.lintMaintainerAndContributors()
+		expMsg(t, Msg{1, 1, missingAddress})
+	})
+
 	t.Run("tooManyMaintainers", func(t *testing.T) {
 		l := newLinter(`# Maintainer: A <a@a>
 # Maintainer: B <b@b>`)
