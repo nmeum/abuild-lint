@@ -43,7 +43,6 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		defer file.Close()
 
 		abuild, err := Parse(file, fn)
 		if err != nil {
@@ -51,6 +50,7 @@ func main() {
 		}
 
 		abuilds = append(abuilds, abuild)
+		file.Close()
 	}
 
 	for _, abuild := range abuilds {
