@@ -280,6 +280,9 @@ local bar=456
 }
 f4() {
 for foobar in "a" "b" "c"; do echo "$foobar"; done
+}
+f5() {
+	export foo="bar"; echo "$foo"
 }`
 
 	l := newLinter(input)

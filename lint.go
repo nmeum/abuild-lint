@@ -189,24 +189,25 @@ func (l *Linter) lintGlobalCmdSubsts() {
 // lintLocalVariables checks that all variables declared inside a
 // function are declared using the local keyword.
 func (l *Linter) lintLocalVariables() {
-	lvars := make(map[string][]string)
+	vars := make(map[string][]string)
 	for n, f := range l.f.Functions {
 		fn := func(node syntax.Node) bool {
 			switch x := node.(type) {
 			case *syntax.DeclClause:
-				if x.Variant.Value != "local" {
+				variant := x.Variant.Value
+				if variant != "local" && variant != "export" {
 					return true
 				}
 
 				for _, a := range x.Assigns {
-					lvars[n] = append(lvars[n], a.Name.Value)
+					vars[n] = append(vars[n], a.Name.Value)
 				}
 			case *syntax.WordIter:
-				if l.isValidVarScope(lvars[n], x.Name) {
+				if l.isValidVarScope(vars[n], x.Name) {
 					return true
 				}
 			case *syntax.Assign:
-				if l.isValidVarScope(lvars[n], x.Name) {
+				if l.isValidVarScope(vars[n], x.Name) {
 					return true
 				}
 			}
@@ -320,8 +321,8 @@ func (l *Linter) lintAddressComments(prefix string) (int, []addressComment) {
 	return amount, comments
 }
 
-func (l *Linter) isValidVarScope(lvars []string, v *syntax.Lit) bool {
-	if IsIncluded(lvars, v.Value) {
+func (l *Linter) isValidVarScope(vars []string, v *syntax.Lit) bool {
+	if IsIncluded(vars, v.Value) {
 		return true
 	}
 
