@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"sort"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -19,6 +21,33 @@ type Msg struct {
 	s string
 }
 
+type byPos []string
+
+func (p byPos) Len() int {
+	return len(p)
+}
+
+func (p byPos) Swap(i, j int) {
+	p[i], p[j] = p[j], p[i]
+}
+
+func (p byPos) Less(i, j int) bool {
+	linei := p[i]
+	linej := p[j]
+
+	li, ci, _ := parseLine(linei)
+	if li == 0 {
+		return true
+	}
+
+	lj, cj, _ := parseLine(linej)
+	if li == lj {
+		return ci < cj
+	} else {
+		return li < lj
+	}
+}
+
 func setup() {
 	var err error
 	stderrReader, stderrWriter, err = os.Pipe()
@@ -26,6 +55,34 @@ func setup() {
 		panic(err)
 	}
 	os.Stderr = stderrWriter
+}
+
+func parseLine(line string) (uint, uint, string) {
+	sep := strings.Index(line, ":")
+	if line[sep+1] == ' ' {
+		return 0, 0, line[sep+2:]
+	}
+	index := sep + 1
+
+	lineLen := strings.Index(line[index:], ":")
+	lineInfo := line[index : index+lineLen]
+
+	l, err := strconv.ParseUint(lineInfo, 10, 16)
+	if err != nil {
+		panic(err)
+	}
+	index += lineLen + 1
+
+	columLen := strings.Index(line[index:], ":")
+	columnInfo := line[index : index+columLen]
+
+	c, err := strconv.ParseUint(columnInfo, 10, 16)
+	if err != nil {
+		panic(err)
+	}
+
+	index += columLen + 2
+	return uint(l), uint(c), line[index:]
 }
 
 func newLinter(input string) *Linter {
@@ -54,45 +111,20 @@ func expMsg(t *testing.T, msgs ...Msg) {
 		t.Fail()
 	}
 
+	// Output of some linter functions is non-deterministic,
+	// e.g. lintLocalVariables → sort output by token position.
+	sort.Sort(byPos(lines))
+
 	for n, m := range msgs {
-		line := lines[n]
-		index := len(name)
-
-		if line[0:index] != name {
-			t.Fatalf("expFail: Expected name %q - got %q",
-				name, line[0:index])
+		line, column, text := parseLine(lines[n])
+		if line != m.l {
+			t.Fatalf("expFail: Line didn't match, expected %d - got %d", m.l, line)
 		}
-
-		if line[index] != ':' {
-			t.Fatal("expFail: Missing seperator")
+		if column != m.c {
+			t.Fatalf("expFail: Column didn't match, expected %d - got %d", m.c, column)
 		}
-
-		if m.l > 0 {
-			sindex := strings.Index(line, " ")
-			if sindex == -1 {
-				t.Fail()
-			}
-
-			apos := line[index+1 : sindex]
-			epos := fmt.Sprintf("%v:%v:", m.l, m.c)
-			if apos != epos {
-				t.Fatalf("expFail: Expected positon %q - got %q",
-					epos, apos)
-			}
-
-			index = sindex
-		} else {
-			index++ // skip space
-		}
-
-		if line[index] != ' ' {
-			t.Fail()
-		}
-
-		index++
-		if line[index:len(line)] != m.s {
-			t.Fatalf("expFail Expected string %q - got %q",
-				m.s, line[index:len(line)])
+		if text != m.s {
+			t.Fatalf("expFail Expected string %q - got %q", m.s, text)
 		}
 	}
 }
@@ -205,8 +237,8 @@ __foo=bar`
 	l.lintGlobalVariables()
 
 	expMsg(t,
-		Msg{2, 1, invalidGlobalVar},
 		Msg{0, 0, fmt.Sprintf(variableUnused, "_foo")},
+		Msg{2, 1, invalidGlobalVar},
 		Msg{6, 1, invalidGlobalVar})
 }
 
@@ -238,13 +270,17 @@ local foo=123
 }
 f3() {
 local bar=456
+}
+f4() {
+for foobar in "a" "b" "c"; do echo "$foobar"; done
 }`
 
 	l := newLinter(input)
 	l.lintLocalVariables()
 
 	expMsg(t,
-		Msg{2, 1, fmt.Sprintf(nonLocalVariable, "foo")})
+		Msg{2, 1, fmt.Sprintf(nonLocalVariable, "foo")},
+		Msg{11, 5, fmt.Sprintf(nonLocalVariable, "foobar")})
 }
 
 func TestLintFunctionOrder(t *testing.T) {

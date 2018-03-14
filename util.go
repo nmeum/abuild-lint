@@ -19,14 +19,18 @@ func IsPrefixVar(varname string) bool {
 	return varname[0] == '_' && varname[1] != '_'
 }
 
-func IsMetaVar(varname string) bool {
-	for _, v := range metadataVariables {
-		if v == varname {
+func IsIncluded(slice []string, str string) bool {
+	for _, s := range slice {
+		if s == str {
 			return true
 		}
 	}
 
 	return false
+}
+
+func IsMetaVar(varname string) bool {
+	return IsIncluded(metadataVariables, varname)
 }
 
 func IsDir(fn string) bool {

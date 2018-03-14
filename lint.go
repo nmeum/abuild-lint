@@ -198,16 +198,13 @@ func (l *Linter) lintLocalVariables() {
 				for _, a := range x.Assigns {
 					lvars[n] = append(lvars[n], a.Name.Value)
 				}
-			case *syntax.Assign:
-				for _, v := range lvars[n] {
-					if v == x.Name.Value {
-						return true
-					}
+			case *syntax.WordIter:
+				if l.isValidVarScope(lvars[n], x.Name) {
+					return true
 				}
-
-				v := x.Name.Value
-				if !(l.f.IsGlobalVar(v) || IsMetaVar(v)) {
-					l.errorf(x.Pos(), nonLocalVariable, v)
+			case *syntax.Assign:
+				if l.isValidVarScope(lvars[n], x.Name) {
+					return true
 				}
 			}
 
@@ -276,6 +273,19 @@ func (l *Linter) lintAddressComments(prefix string) (int, []addressComment) {
 	}
 
 	return amount, comments
+}
+
+func (l *Linter) isValidVarScope(lvars []string, v *syntax.Lit) bool {
+	if IsIncluded(lvars, v.Value) {
+		return true
+	}
+
+	if !(l.f.IsGlobalVar(v.Value) || IsMetaVar(v.Value)) {
+		l.errorf(v.Pos(), nonLocalVariable, v.Value)
+		return false
+	}
+
+	return true
 }
 
 func (l *Linter) errorf(pos syntax.Pos, format string,
