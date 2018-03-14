@@ -11,6 +11,14 @@ func IsSpace(r rune) bool {
 	return r == ' '
 }
 
+func IsPrefixVar(varname string) bool {
+	if len(varname) < 2 {
+		return false
+	}
+
+	return varname[0] == '_' && varname[1] != '_'
+}
+
 func IsMetaVar(varname string) bool {
 	for _, v := range metadataVariables {
 		if v == varname {

@@ -172,14 +172,16 @@ func TestListGlobalVariables(t *testing.T) {
 foo=42
 _foo=9001
 _bar=hoho
-pkgver=$_bar`
+pkgver=$_bar
+__foo=bar`
 
 	l := newLinter(input)
 	l.lintGlobalVariables()
 
 	expMsg(t,
 		Msg{2, 1, invalidGlobalVar},
-		Msg{0, 0, fmt.Sprintf(variableUnused, "_foo")})
+		Msg{0, 0, fmt.Sprintf(variableUnused, "_foo")},
+		Msg{6, 1, invalidGlobalVar})
 }
 
 func TestLintGlobalCallExprs(t *testing.T) {

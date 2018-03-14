@@ -127,7 +127,7 @@ func (l *Linter) lintGlobalVariables() {
 	for _, a := range l.f.Assignments {
 		v := a.Name.Value
 		if !IsMetaVar(v) {
-			if v[0] != '_' {
+			if !IsPrefixVar(v) {
 				l.error(a.Pos(), invalidGlobalVar)
 				continue
 			}
