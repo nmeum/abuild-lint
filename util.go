@@ -1,7 +1,13 @@
 package main
 
 import (
+	"mvdan.cc/sh/syntax"
 	"os"
+	"regexp"
+)
+
+var (
+	IsName = regexp.MustCompile("^[_A-Za-z0-9]+$").MatchString
 )
 
 // IsSpace reports whether the rune is an ascii space character. This
@@ -9,6 +15,12 @@ import (
 // space character as defined by Unicode's White Space property.
 func IsSpace(r rune) bool {
 	return r == ' '
+}
+
+func IsParamExp(paramExp *syntax.ParamExp) bool {
+	return paramExp.Excl || paramExp.Length || paramExp.Width ||
+		paramExp.Index != nil || paramExp.Slice != nil ||
+		paramExp.Repl != nil || paramExp.Exp != nil
 }
 
 func IsPrefixVar(varname string) bool {

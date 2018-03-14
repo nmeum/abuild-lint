@@ -283,6 +283,23 @@ for foobar in "a" "b" "c"; do echo "$foobar"; done
 		Msg{11, 5, fmt.Sprintf(nonLocalVariable, "foobar")})
 }
 
+func TestLintParamExpression(t *testing.T) {
+	input := `# foobar
+foo=${pkgname}
+bar=$foo
+# barfoo
+foo=${pkgname##.*}
+foo=${foobar}foobar
+foo=${foobar}.$barfoo`
+
+	l := newLinter(input)
+	l.lintParamExpression()
+
+	expMsg(t,
+		Msg{2, 5, fmt.Sprintf(trivialLongParamExp, "pkgname", "pkgname")},
+		Msg{7, 5, fmt.Sprintf(trivialLongParamExp, "foobar", "foobar")})
+}
+
 func TestLintFunctionOrder(t *testing.T) {
 	t.Run("wrongFuncOrder", func(t *testing.T) {
 		input := `package() {

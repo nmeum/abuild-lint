@@ -76,7 +76,7 @@ func (l *Linter) Lint() {
 	l.lintGlobalVariables()
 	l.lintGlobalCallExprs()
 	l.lintLocalVariables()
-	// TODO: check that $foo is used instead of ${foo} when possible
+	l.lintParamExpression()
 	// TODO: check that there are no empty lines between metadata assignments
 	// XXX: maybe check that certain metadata variables are always declared
 	// XXX: maybe check order of metadata variables
@@ -213,6 +213,48 @@ func (l *Linter) lintLocalVariables() {
 
 		syntax.Walk(&f, fn)
 	}
+}
+
+// lintParamExpression checks for long parameter expansion with the form
+// ${…} and checks if they can be replaced by a semantically equivalent
+// short parameter expansion with a $… form.
+func (l *Linter) lintParamExpression() {
+	var words []*syntax.Word
+	l.f.Walk(func(node syntax.Node) bool {
+		word, ok := node.(*syntax.Word)
+		if ok {
+			words = append(words, word)
+			return false
+		}
+
+		return true
+	})
+
+	for _, word := range words {
+		nparts := len(word.Parts)
+		for n, p := range word.Parts {
+			paramExp, ok := p.(*syntax.ParamExp)
+			if !ok {
+				continue
+			} else if paramExp.Short {
+				continue
+			} else if IsParamExp(paramExp) {
+				continue
+			}
+
+			if n < nparts-1 {
+				next := word.Parts[n+1]
+				lit, ok := next.(*syntax.Lit)
+				if !ok || IsName(lit.Value) {
+					continue
+				}
+			}
+
+			l.errorf(paramExp.Pos(), trivialLongParamExp,
+				paramExp.Param.Value, paramExp.Param.Value)
+		}
+	}
+
 }
 
 // lintFunctionOrder checks that all package functions are declared in
