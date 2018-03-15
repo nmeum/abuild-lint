@@ -53,8 +53,12 @@ func main() {
 		file.Close()
 	}
 
+	exitStatus := 0
 	for _, abuild := range abuilds {
 		linter := Linter{f: abuild}
-		linter.Lint()
+		if linter.Lint() {
+			exitStatus = 1
+		}
 	}
+	os.Exit(exitStatus)
 }

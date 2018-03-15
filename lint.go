@@ -69,7 +69,7 @@ type Linter struct {
 	f *APKBUILD
 }
 
-func (l *Linter) Lint() {
+func (l *Linter) Lint() bool {
 	l.lintComments()
 	l.lintMaintainerAndContributors()
 
@@ -91,6 +91,8 @@ func (l *Linter) Lint() {
 	// TODO: check for space between last function declaration and checksum
 
 	// TODO: check for forbidden bashisms
+
+	return l.v
 }
 
 // lintComments checks that all comments start with a space. Shebangs
