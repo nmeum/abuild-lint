@@ -1,0 +1,116 @@
+.Dd March 13 2018
+.Dt ABUILD-LINT 1
+.Os
+.Sh NAME
+.Nm abuild-lint
+.Nd Linting utility for Alpine Linux APKBUILDs
+.Sh SYNOPSIS
+.Nm abuild-lint
+.Ar aport ...
+.Sh DESCRIPTION
+The
+.Nm
+utility parses Alpine Linux APKBUILDs and checks them for style
+mistakes. The
+.Ar aport
+which should be checked can be specified as a path to an APKBUILD
+or as a path to a directory containing an APKBUILD. If no
+.Ar aport
+is specified
+.Nm
+searches for an APKBUILD file in the current directory.
+.Pp
+Regarding the checks
+.Nm
+differentiates between local declaration and global declaration. Global
+declaration are the ones made outside of function and local ones are the
+ones made inside a function. Additionally, the terms metadata variables
+and metadata functions are used in the following section. The term
+metadata variables refers to variables declared in an APKBUILD which are
+picked up and parsed by
+.Xr abuild 1
+directly, an example for this is the
+.Va pkgname
+variable. The metadata functions refers to functions called from
+.Xr abuild 1 ,
+an example for this is the
+.Fn build
+function.
+.Sh PERFORMED CHECKS
+This section is a list of all checks performed by
+.Nm
+sorted alphabetically.
+.\" Add a subsection for each error from errors.go
+.Ss Address comment
+Check if comments expected to contain a valid
+.Em RFC 5322
+address (maintainer and contributor comments) actually contain one.
+.Ss Address separator
+Checks if comments expected to contain a valid address separate the
+address from the comment prefix with an
+.Xr ascii 7
+space character.
+.Ss Amount of maintainer comments
+Checks if more than one maintainer comment is present.
+.Ss Contributor comment order
+Checks if all contributor comments are declared before the maintainer
+comment.
+.Ss Comment prefixes
+Checks if all comments start with an
+.Xr ascii 7
+space character.
+.Ss Forbidden Bashisms
+Checks for
+.Xr bash 1
+extensions which are not allowed to be used.
+.Ss Function order
+Checks if all declared function are declared in the same order they are
+called by
+.Xr abuild 1 .
+.Ss Global command substitutions
+Checks that command substitutions are not used outside of functions.
+.Ss Globally declared variables
+Checks if all globally declared non-metadata variables are prefixed with
+a single underscore character.
+.Ss Locally declared variables
+Checks if all locally declared variables are declared using the special
+.Em local
+keyword.
+.Ss Long parameter expansions
+Checks if all long parameter expansions of the form
+.Em ${varname}
+can't be replaced by a short parameter expansion of the form
+.Em $varname .
+.Ss Maintainer comment
+Checks that a maintainer comment is present.
+.Ss Maintainer comment order
+Checks that the maintainer comment is declared before the first variable
+assignment.
+.Ss Missing metadata variable
+Checks if all required metadata variables where defined.
+.Ss Post function declaration metadata
+Checks if checksum metadata is declared after the last function
+declaration.
+.Ss Pre function declaration metadata
+Checks if all metadata variables (except checksums) are declared before
+the first function declaration.
+.Ss Repeated contributor comment
+Checks if all declared contributor comments have a unique
+.Em RFC 5233
+address.
+.Ss Unused variables
+Checks if all declared non-metadata variables are actually used
+somewhere in the APKBUILD.
+.Sh EXIT STATUS
+If
+.Nm
+didn't find any style violations in the given
+.Ar aports
+it exits with exit status zero. If an error occurred or if a style
+violation was found in one of the given
+.Ar aports
+.Nm
+exits with a non-zero exit status.
+.Sh SEE ALSO
+.Xr abuild 1 ,
+.Xr APKBUILD 5
