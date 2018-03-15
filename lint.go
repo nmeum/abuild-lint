@@ -49,8 +49,8 @@ var metadataVariables = []string{
 // and are then called from abuild(1). The function should be added in
 // the order they are called by abuild(1).
 var packageFunctions = []string{
-	"snapshot",
 	"sanitycheck",
+	"snapshot",
 	"fetch",
 	"unpack",
 	"prepare",
@@ -77,12 +77,15 @@ func (l *Linter) Lint() {
 	l.lintGlobalCmdSubsts()
 	l.lintLocalVariables()
 	l.lintParamExpression()
+	// TODO: check for required metadata variables (pkgname, pkgurl, …)
 	// TODO: check that there are no empty lines between metadata assignments
 	// XXX: maybe check that certain metadata variables are always declared
 	// XXX: maybe check order of metadata variables
 
 	// TODO: check that helper functions are prefixed with an _
 	l.lintFunctionOrder()
+	// TODO: check that checksum are declared after functions
+	// TODO: check that all other metadata variables are declared before the first function
 
 	// TODO: check that checksum are declared at the end of a file
 	// TODO: check for space between last function declaration and checksum
