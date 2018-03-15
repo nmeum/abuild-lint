@@ -13,7 +13,7 @@ const (
 	invalidAddress        = "Mail address doesn't conform to RFC 5322"
 	tooManyMaintainers    = "Only one maintainer can be specified"
 	invalidGlobalVar      = "Custom global variables should start with an '_'"
-	callExprInGlobalVar   = "$(…) shouldn't be used in global variables"
+	cmdSubstInGlobalVar   = "$(…) shouldn't be used in global variables"
 	maintainerAfterAssign = "The maintainer comment should be declared before any assignment"
 	repeatedAddrComment   = "Contributor comment with this RFC 5322 has already been defined"
 	wrongAddrCommentOrder = "Contributor comment should be defined before the maintainer comment"

@@ -264,8 +264,8 @@ _baz=${foo} bar`
 	l.lintGlobalCmdSubsts()
 
 	expMsg(t,
-		Msg{2, 6, callExprInGlobalVar},
-		Msg{6, 6, callExprInGlobalVar})
+		Msg{2, 6, cmdSubstInGlobalVar},
+		Msg{6, 6, cmdSubstInGlobalVar})
 }
 
 func TestLintLocalVariables(t *testing.T) {

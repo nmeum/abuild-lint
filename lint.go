@@ -175,12 +175,12 @@ func (l *Linter) lintGlobalVariables() {
 }
 
 // lintGlobalCmdSubsts check that all global shell statements don't use
-// any kind of call expressions.
+// any kind of command substitutions.
 func (l *Linter) lintGlobalCmdSubsts() {
 	l.f.Walk(func(node syntax.Node) bool {
 		switch node.(type) {
 		case *syntax.CmdSubst:
-			l.error(node.Pos(), callExprInGlobalVar)
+			l.error(node.Pos(), cmdSubstInGlobalVar)
 		case *syntax.FuncDecl:
 			return false
 		}
