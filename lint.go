@@ -18,31 +18,38 @@ const (
 	contributorPrefix = " Contributor:"
 )
 
+type metaPos int
+
+const (
+	beforeFuncs metaPos = iota
+	afterFuncs
+)
+
 // Array containing all variables which are directly used by
 // abuild and should thus be declared globally.
-var metadataVariables = []string{
-	"pkgname",
-	"pkgver",
-	"pkgrel",
-	"pkgdesc",
-	"url",
-	"arch",
-	"license",
-	"depends",
-	"depends_dev",
-	"makedepends",
-	"checkdepends",
-	"install",
-	"subpackages",
-	"source",
-	"options",
-	"patch_args",
-	"builddir",
-	"replaces",
-	"md5sums",
-	"sha256sums",
-	"sha512sums",
-	"install_if",
+var metadataVariables = map[string]metaPos{
+	"pkgname":      beforeFuncs,
+	"pkgver":       beforeFuncs,
+	"pkgrel":       beforeFuncs,
+	"pkgdesc":      beforeFuncs,
+	"url":          beforeFuncs,
+	"arch":         beforeFuncs,
+	"license":      beforeFuncs,
+	"depends":      beforeFuncs,
+	"depends_dev":  beforeFuncs,
+	"makedepends":  beforeFuncs,
+	"checkdepends": beforeFuncs,
+	"install":      beforeFuncs,
+	"subpackages":  beforeFuncs,
+	"source":       beforeFuncs,
+	"options":      beforeFuncs,
+	"patch_args":   beforeFuncs,
+	"builddir":     beforeFuncs,
+	"replaces":     beforeFuncs,
+	"install_if":   beforeFuncs,
+	"md5sums":      afterFuncs,
+	"sha256sums":   afterFuncs,
+	"sha512sums":   afterFuncs,
 }
 
 // Array containing all functions which can be declared by an APKBUILD
@@ -81,14 +88,11 @@ func (l *Linter) Lint() bool {
 	// TODO: check for required metadata variables (pkgname, pkgurl, …)
 	// TODO: check that there are no empty lines between metadata assignments
 	// XXX: maybe check that certain metadata variables are always declared
-	// XXX: maybe check order of metadata variables
+	l.lintMetadataPlacement()
 
 	// TODO: check that helper functions are prefixed with an _
 	l.lintFunctionOrder()
-	// TODO: check that checksum are declared after functions
-	// TODO: check that all other metadata variables are declared before the first function
 
-	// TODO: check that checksum are declared at the end of a file
 	// TODO: check for space between last function declaration and checksum
 
 	// TODO: check for forbidden bashisms
@@ -265,6 +269,41 @@ func (l *Linter) lintParamExpression() {
 		}
 	}
 
+}
+
+// lintMetadataPlacement checks the placement of metadata variables.
+// Some need to be declared before the first function declaration,
+// others need to be declared after the last function declaration.
+func (l *Linter) lintMetadataPlacement() {
+	var firstFn, lastFn *syntax.FuncDecl
+	for _, fn := range l.f.Functions {
+		if firstFn == nil || !fn.Pos().After(firstFn.Pos()) {
+			firstFn = &fn
+		}
+		if lastFn == nil || fn.Pos().After(lastFn.Pos()) {
+			lastFn = &fn
+		}
+	}
+
+	for _, v := range l.f.Assignments {
+		name := v.Name.Value
+		mpos, ok := metadataVariables[name]
+		if !ok {
+			continue
+		}
+
+		vpos := v.Pos()
+		switch mpos {
+		case beforeFuncs:
+			if firstFn != nil && vpos.After(firstFn.Pos()) {
+				l.errorf(vpos, metadataBeforeFunc, name)
+			}
+		case afterFuncs:
+			if lastFn != nil && !vpos.After(lastFn.Pos()) {
+				l.errorf(vpos, metadataAfterFunc, name)
+			}
+		}
+	}
 }
 
 // lintFunctionOrder checks that all package functions are declared in

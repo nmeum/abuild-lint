@@ -42,7 +42,8 @@ func IsIncluded(slice []string, str string) bool {
 }
 
 func IsMetaVar(varname string) bool {
-	return IsIncluded(metadataVariables, varname)
+	_, ok := metadataVariables[varname]
+	return ok
 }
 
 func IsDir(fn string) bool {

@@ -310,6 +310,21 @@ foo=${foobar}.$barfoo`
 		Msg{7, 5, fmt.Sprintf(trivialLongParamExp, "foobar", "foobar")})
 }
 
+func TestVariablePlacement(t *testing.T) {
+	input := `sha512sums=foobar
+myfunc() {
+echo myfunc
+}
+pkgname=barfoo`
+
+	l := newLinter(input)
+	l.lintMetadataPlacement()
+
+	expMsg(t,
+		Msg{1, 1, fmt.Sprintf(metadataAfterFunc, "sha512sums")},
+		Msg{5, 1, fmt.Sprintf(metadataBeforeFunc, "pkgname")})
+}
+
 func TestLintFunctionOrder(t *testing.T) {
 	t.Run("wrongFuncOrder", func(t *testing.T) {
 		input := `package() {

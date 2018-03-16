@@ -5,6 +5,8 @@ const (
 	nonLocalVariable    = "Variable %q was not declared using the local keyword"
 	wrongFuncOrder      = "Function %q should be declared after function %q"
 	trivialLongParamExp = "Parameter Expansion \"${%s}\" can be replaced by a short Expansion \"$%s\""
+	metadataAfterFunc   = "Variable %q should be declared after the last function declaration"
+	metadataBeforeFunc  = "Variable %q should be declared before the first function declaration"
 
 	badCommentPrefix      = "Comment doesn't start with a space"
 	missingMaintainer     = "Maintainer is missing"
