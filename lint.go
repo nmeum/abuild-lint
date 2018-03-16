@@ -76,6 +76,7 @@ func (l *Linter) Lint() bool {
 	l.lintGlobalVariables()
 	l.lintGlobalCmdSubsts()
 	l.lintLocalVariables()
+	// TODO: check for locally unused variables
 	l.lintParamExpression()
 	// TODO: check for required metadata variables (pkgname, pkgurl, …)
 	// TODO: check that there are no empty lines between metadata assignments
@@ -310,7 +311,7 @@ func (l *Linter) lintAddressComments(prefix string) (int, []addressComment) {
 
 		idx := len(prefix)
 		if c.Text[idx] != ' ' {
-			l.error(c.Pos(), noAddressSeperator)
+			l.error(c.Pos(), noAddressSeparator)
 			continue
 		}
 

@@ -166,7 +166,7 @@ func TestLintAddressComments(t *testing.T) {
 	expMsg(t,
 		Msg{3, 1, missingAddress},
 		Msg{4, 1, missingAddress},
-		Msg{5, 1, noAddressSeperator},
+		Msg{5, 1, noAddressSeparator},
 		Msg{6, 1, invalidAddress})
 }
 
