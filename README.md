@@ -12,10 +12,12 @@ to replace a policy document though.
 
 ## Installation
 
-abuild-lint can be installed easily using:
+abuild-lint can either be installed using `go get` or using the provided
+`GNUmakefile`. The latter installation method is preferred and boils
+down to the following commands:
 
-	$ git clone --recursive git://git.8pit.net/abuild-lint.git
-	$ (cd abuild-lint && go install)
+	$ make
+	$ make install
 
 ## Documentation
 
@@ -29,9 +31,8 @@ format. The documentation can be viewed using:
 
 ## Tests
 
-abuild-lint comes with a unit testsuite which can be run using:
-
-	$ go test
+abuild-lint comes with a unit testsuite which can either be run using
+`go test` or using the `check` target of the provided `GNUmakefile`.
 
 ## FAQ
 
