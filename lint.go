@@ -25,31 +25,36 @@ const (
 	afterFuncs
 )
 
+type metadata struct {
+	p metaPos
+	r bool
+}
+
 // Array containing all variables which are directly used by
 // abuild and should thus be declared globally.
-var metadataVariables = map[string]metaPos{
-	"pkgname":      beforeFuncs,
-	"pkgver":       beforeFuncs,
-	"pkgrel":       beforeFuncs,
-	"pkgdesc":      beforeFuncs,
-	"url":          beforeFuncs,
-	"arch":         beforeFuncs,
-	"license":      beforeFuncs,
-	"depends":      beforeFuncs,
-	"depends_dev":  beforeFuncs,
-	"makedepends":  beforeFuncs,
-	"checkdepends": beforeFuncs,
-	"install":      beforeFuncs,
-	"subpackages":  beforeFuncs,
-	"source":       beforeFuncs,
-	"options":      beforeFuncs,
-	"patch_args":   beforeFuncs,
-	"builddir":     beforeFuncs,
-	"replaces":     beforeFuncs,
-	"install_if":   beforeFuncs,
-	"md5sums":      afterFuncs,
-	"sha256sums":   afterFuncs,
-	"sha512sums":   afterFuncs,
+var metadataVariables = map[string]metadata{
+	"pkgname":      {beforeFuncs, true},
+	"pkgver":       {beforeFuncs, true},
+	"pkgrel":       {beforeFuncs, true},
+	"pkgdesc":      {beforeFuncs, true},
+	"url":          {beforeFuncs, true},
+	"arch":         {beforeFuncs, true},
+	"license":      {beforeFuncs, true},
+	"depends":      {beforeFuncs, false},
+	"depends_dev":  {beforeFuncs, false},
+	"makedepends":  {beforeFuncs, false},
+	"checkdepends": {beforeFuncs, false},
+	"install":      {beforeFuncs, false},
+	"subpackages":  {beforeFuncs, false},
+	"source":       {beforeFuncs, false},
+	"options":      {beforeFuncs, false},
+	"patch_args":   {beforeFuncs, false},
+	"builddir":     {beforeFuncs, false},
+	"replaces":     {beforeFuncs, false},
+	"install_if":   {beforeFuncs, false},
+	"md5sums":      {afterFuncs, false},
+	"sha256sums":   {afterFuncs, false},
+	"sha512sums":   {afterFuncs, true},
 }
 
 // Array containing all functions which can be declared by an APKBUILD
@@ -79,19 +84,15 @@ type Linter struct {
 func (l *Linter) Lint() bool {
 	l.lintComments()
 	l.lintMaintainerAndContributors()
-
 	l.lintGlobalVariables()
 	l.lintGlobalCmdSubsts()
 	l.lintLocalVariables()
 	l.lintUnusedVariables()
 	l.lintParamExpression()
-	// TODO: check for required metadata variables (pkgname, pkgurl, …)
 	l.lintMetadataPlacement()
-
-	// TODO: check that helper functions are prefixed with an _
+	l.lintRequiredMetadata()
 	l.lintFunctionOrder()
 	l.lintBashisms()
-
 	return l.v
 }
 
@@ -298,7 +299,7 @@ func (l *Linter) lintMetadataPlacement() {
 		}
 
 		vpos := v.Pos()
-		switch mpos {
+		switch mpos.p {
 		case beforeFuncs:
 			if firstFn != nil && vpos.After(firstFn.Pos()) {
 				l.errorf(vpos, metadataBeforeFunc, name)
@@ -307,6 +308,20 @@ func (l *Linter) lintMetadataPlacement() {
 			if lastFn != nil && !vpos.After(lastFn.Pos()) {
 				l.errorf(vpos, metadataAfterFunc, name)
 			}
+		}
+	}
+}
+
+// lintRequiredMetadata checks that all required metadata variables are
+// defined in the APKBUILD.
+func (l *Linter) lintRequiredMetadata() {
+	for n, m := range metadataVariables {
+		if !m.r {
+			continue
+		}
+
+		if !l.f.IsGlobalVar(n) {
+			l.errorf(syntax.Pos{}, missingMetadata, n)
 		}
 	}
 }

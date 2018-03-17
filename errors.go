@@ -9,6 +9,7 @@ const (
 	metadataAfterFunc   = "Variable %q should be declared after the last function declaration"
 	metadataBeforeFunc  = "Variable %q should be declared before the first function declaration"
 	forbiddenBashism    = "Usage of bash extension %q is not allowed"
+	missingMetadata     = "Variable %q is required but wasn't defined"
 
 	badCommentPrefix      = "Comment doesn't start with a space"
 	missingMaintainer     = "Maintainer is missing"

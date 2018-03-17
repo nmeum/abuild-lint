@@ -341,6 +341,41 @@ pkgname=barfoo`
 		Msg{5, 1, fmt.Sprintf(metadataBeforeFunc, "pkgname")})
 }
 
+func TestLintRequiredMetadata(t *testing.T) {
+	t.Run("allVarsDefined", func(t *testing.T) {
+		input := `pkgname=foobar
+pkgver=1337
+pkgrel=2342
+pkgdesc="foobar"
+url=http://example.org
+arch=all
+license=MIT
+sha512sums=1234`
+
+		l := newLinter(input)
+		l.lintRequiredMetadata()
+		if l.v {
+			t.Fail()
+		}
+	})
+
+	t.Run("missingOneVar", func(t *testing.T) {
+		input := `pkgname=foobar
+pkgrel=2342
+pkgdesc="foobar"
+url=http://example.org
+arch=all
+license=MIT
+sha512sums=1234`
+
+		l := newLinter(input)
+		l.lintRequiredMetadata()
+
+		expMsg(t,
+			Msg{0, 0, fmt.Sprintf(missingMetadata, "pkgver")})
+	})
+}
+
 func TestLintFunctionOrder(t *testing.T) {
 	t.Run("wrongFuncOrder", func(t *testing.T) {
 		input := `package() {
