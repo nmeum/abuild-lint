@@ -254,6 +254,9 @@ foo=lol
 }
 f2() {
 echo $_bar
+}
+f3() {
+FOO=bar make
 }`
 
 	l := newLinter(input)
@@ -298,8 +301,9 @@ f4() {
 for foobar in "a" "b" "c"; do echo "$foobar"; done
 }
 f5() {
-	export foo="bar"; echo "$foo"
-}`
+export foo="bar"; echo "$foo"
+}
+VARFORCALLEXPR=23 ls`
 
 	l := newLinter(input)
 	l.lintLocalVariables()

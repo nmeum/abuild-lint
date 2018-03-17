@@ -176,14 +176,16 @@ func (l *Linter) lintGlobalVariables() {
 // non-metadata variable are actually used somewhere in the APKBUILD.
 func (l *Linter) lintUnusedVariables() {
 	l.f.Walk(func(node syntax.Node) bool {
-		assign, ok := node.(*syntax.Assign)
-		if !ok {
-			return true
-		}
-
-		v := assign.Name.Value
-		if !IsMetaVar(v) && l.f.IsUnusedVar(v) {
-			l.errorf(assign.Pos(), variableUnused, v)
+		switch x := node.(type) {
+		case *syntax.CallExpr:
+			if len(x.Args) > 0 {
+				return false // FOO=bar ./foo
+			}
+		case *syntax.Assign:
+			v := x.Name.Value
+			if !IsMetaVar(v) && l.f.IsUnusedVar(v) {
+				l.errorf(x.Pos(), variableUnused, v)
+			}
 		}
 
 		return true
@@ -212,6 +214,10 @@ func (l *Linter) lintLocalVariables() {
 	for n, f := range l.f.Functions {
 		fn := func(node syntax.Node) bool {
 			switch x := node.(type) {
+			case *syntax.CallExpr:
+				if len(x.Args) > 0 {
+					return false // FOO=bar ./foo
+				}
 			case *syntax.DeclClause:
 				variant := x.Variant.Value
 				if variant != "local" && variant != "export" {
@@ -221,13 +227,13 @@ func (l *Linter) lintLocalVariables() {
 				for _, a := range x.Assigns {
 					vars[n] = append(vars[n], a.Name.Value)
 				}
-			case *syntax.WordIter:
-				if l.isValidVarScope(vars[n], x.Name) {
-					return true
-				}
 			case *syntax.Assign:
-				if l.isValidVarScope(vars[n], x.Name) {
-					return true
+				if !l.isValidVarScope(vars[n], x.Name) {
+					l.errorf(x.Pos(), nonLocalVariable, x.Name.Value)
+				}
+			case *syntax.WordIter:
+				if !l.isValidVarScope(vars[n], x.Name) {
+					l.errorf(x.Pos(), nonLocalVariable, x.Name.Value)
 				}
 			}
 
@@ -432,7 +438,6 @@ func (l *Linter) isValidVarScope(vars []string, v *syntax.Lit) bool {
 	}
 
 	if !(l.f.IsGlobalVar(v.Value) || IsMetaVar(v.Value)) {
-		l.errorf(v.Pos(), nonLocalVariable, v.Value)
 		return false
 	}
 
