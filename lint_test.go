@@ -374,6 +374,40 @@ package() {
 	})
 }
 
+func TestLintBashisms(t *testing.T) {
+	input := `[[ -e "$builddir" ]] && foo=bar
+bar=*(foo bar)
+echo >(true)
+let x
+declare -A foobar
+readonly x
+typeset -r x
+nameref foo
+echo ${#foo}
+select s in foo bar baz; do
+	echo $s
+done
+function f() {
+return 1
+}`
+
+	l := newLinter(input)
+	l.lintBashisms()
+
+	expMsg(t,
+		Msg{1, 1, fmt.Sprintf(forbiddenBashism, "test clause")},
+		Msg{2, 5, fmt.Sprintf(forbiddenBashism, "extended globbing expression")},
+		Msg{3, 6, fmt.Sprintf(forbiddenBashism, "process substitution")},
+		Msg{4, 1, fmt.Sprintf(forbiddenBashism, "let clause")},
+		Msg{5, 1, fmt.Sprintf(forbiddenBashism, "declare")},
+		Msg{6, 1, fmt.Sprintf(forbiddenBashism, "readonly")},
+		Msg{7, 1, fmt.Sprintf(forbiddenBashism, "typeset")},
+		Msg{8, 1, fmt.Sprintf(forbiddenBashism, "nameref")},
+		Msg{9, 6, fmt.Sprintf(forbiddenBashism, "advanced parameter expression")},
+		Msg{10, 1, fmt.Sprintf(forbiddenBashism, "select clause")},
+		Msg{13, 1, fmt.Sprintf(forbiddenBashism, "non-POSIX function declaration")})
+}
+
 func TestMain(m *testing.M) {
 	setup()
 	os.Exit(m.Run())

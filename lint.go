@@ -86,16 +86,11 @@ func (l *Linter) Lint() bool {
 	l.lintUnusedVariables()
 	l.lintParamExpression()
 	// TODO: check for required metadata variables (pkgname, pkgurl, …)
-	// TODO: check that there are no empty lines between metadata assignments
-	// XXX: maybe check that certain metadata variables are always declared
 	l.lintMetadataPlacement()
 
 	// TODO: check that helper functions are prefixed with an _
 	l.lintFunctionOrder()
-
-	// TODO: check for space between last function declaration and checksum
-
-	// TODO: check for forbidden bashisms
+	l.lintBashisms()
 
 	return l.v
 }
@@ -336,6 +331,43 @@ func (l *Linter) lintFunctionOrder() {
 	}
 
 	// TODO: check subpackage functions
+}
+
+// lintBashisms checks for bash language features that are not allowed
+// to be used in an APKBUILD.
+func (l *Linter) lintBashisms() {
+	l.f.Walk(func(n syntax.Node) bool {
+		switch x := n.(type) {
+		case *syntax.TestClause:
+			l.errorf(x.Pos(), forbiddenBashism, "test clause")
+		case *syntax.ExtGlob:
+			l.errorf(x.Pos(), forbiddenBashism, "extended globbing expression")
+		case *syntax.ProcSubst:
+			l.errorf(x.Pos(), forbiddenBashism, "process substitution")
+		case *syntax.LetClause:
+			l.errorf(x.Pos(), forbiddenBashism, "let clause")
+		case *syntax.DeclClause:
+			v := x.Variant.Value
+			if v != "local" && v != "export" {
+				l.errorf(x.Variant.Pos(), forbiddenBashism, v)
+			}
+		case *syntax.ParamExp:
+			if x.Excl || x.Length || x.Width ||
+				x.Index != nil || x.Slice != nil {
+				l.errorf(x.Pos(), forbiddenBashism, "advanced parameter expression")
+			}
+		case *syntax.ForClause:
+			if x.Select {
+				l.errorf(x.Pos(), forbiddenBashism, "select clause")
+			}
+		case *syntax.FuncDecl:
+			if x.RsrvWord {
+				l.errorf(x.Pos(), forbiddenBashism, "non-POSIX function declaration")
+			}
+		}
+
+		return true
+	})
 }
 
 // lintAddressComments checks all global comments which start with given
