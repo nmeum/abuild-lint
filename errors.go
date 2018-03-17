@@ -1,6 +1,7 @@
 package main
 
 const (
+	invalidGlobalVar    = "Custom global variable %q doesn't start with a single '_'"
 	variableUnused      = "Variable %q is unused"
 	nonLocalVariable    = "Variable %q was not declared using the local keyword"
 	wrongFuncOrder      = "Function %q should be declared after function %q"
@@ -14,7 +15,6 @@ const (
 	noAddressSeparator    = "Mail address should be seperated from prefix with a space"
 	invalidAddress        = "Mail address doesn't conform to RFC 5322"
 	tooManyMaintainers    = "Only one maintainer can be specified"
-	invalidGlobalVar      = "Custom global variables should start with an '_'"
 	cmdSubstInGlobalVar   = "$(…) shouldn't be used in global variables"
 	maintainerAfterAssign = "The maintainer comment should be declared before any assignment"
 	repeatedAddrComment   = "Contributor comment with this RFC 5322 has already been defined"

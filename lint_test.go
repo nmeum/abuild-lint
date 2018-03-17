@@ -241,8 +241,8 @@ __foo=bar`
 	l.lintGlobalVariables()
 
 	expMsg(t,
-		Msg{2, 1, invalidGlobalVar},
-		Msg{4, 1, invalidGlobalVar})
+		Msg{2, 1, fmt.Sprintf(invalidGlobalVar, "foo")},
+		Msg{4, 1, fmt.Sprintf(invalidGlobalVar, "__foo")})
 }
 
 func TestLintUnusedVariables(t *testing.T) {
