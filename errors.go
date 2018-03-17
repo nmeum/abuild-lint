@@ -1,7 +1,7 @@
 package main
 
 const (
-	variableUnused      = "Global variable %q is unused"
+	variableUnused      = "Variable %q is unused"
 	nonLocalVariable    = "Variable %q was not declared using the local keyword"
 	wrongFuncOrder      = "Function %q should be declared after function %q"
 	trivialLongParamExp = "Parameter Expansion \"${%s}\" can be replaced by a short Expansion \"$%s\""

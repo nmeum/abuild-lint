@@ -83,7 +83,7 @@ func (l *Linter) Lint() bool {
 	l.lintGlobalVariables()
 	l.lintGlobalCmdSubsts()
 	l.lintLocalVariables()
-	// TODO: check for locally unused variables
+	l.lintUnusedVariables()
 	l.lintParamExpression()
 	// TODO: check for required metadata variables (pkgname, pkgurl, …)
 	// TODO: check that there are no empty lines between metadata assignments
@@ -162,23 +162,33 @@ func (l *Linter) lintMaintainerAndContributors() {
 
 // lintGlobalVariables checks that all declared globally declared
 // variables which are not prefixed with an underscore are metadata
-// variables actually picked up by abuild(1). Besides it checks that all
-// globally declared variables prefixed with an underscore are actually
-// used.
+// variables actually picked up by abuild(1).
 func (l *Linter) lintGlobalVariables() {
 	for _, a := range l.f.Assignments {
 		v := a.Name.Value
-		if !IsMetaVar(v) {
-			if !IsPrefixVar(v) {
-				l.error(a.Pos(), invalidGlobalVar)
-				continue
-			}
-
-			if l.f.IsUnusedVar(v) {
-				l.errorf(syntax.Pos{}, variableUnused, v)
-			}
+		if !IsMetaVar(v) && !IsPrefixVar(v) {
+			l.error(a.Pos(), invalidGlobalVar)
+			continue
 		}
 	}
+}
+
+// lintUnusedVariables checks if all globally and locally declared
+// non-metadata variable are actually used somewhere in the APKBUILD.
+func (l *Linter) lintUnusedVariables() {
+	l.f.Walk(func(node syntax.Node) bool {
+		assign, ok := node.(*syntax.Assign)
+		if !ok {
+			return true
+		}
+
+		v := assign.Name.Value
+		if !IsMetaVar(v) && l.f.IsUnusedVar(v) {
+			l.errorf(assign.Pos(), variableUnused, v)
+		}
+
+		return true
+	})
 }
 
 // lintGlobalCmdSubsts check that all global shell statements don't use

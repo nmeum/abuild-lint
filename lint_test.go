@@ -235,17 +235,33 @@ func TestListGlobalVariables(t *testing.T) {
 	input := `pkgname=foobar
 foo=42
 _foo=9001
-_bar=hoho
-pkgver=$_bar
 __foo=bar`
 
 	l := newLinter(input)
 	l.lintGlobalVariables()
 
 	expMsg(t,
-		Msg{0, 0, fmt.Sprintf(variableUnused, "_foo")},
 		Msg{2, 1, invalidGlobalVar},
-		Msg{6, 1, invalidGlobalVar})
+		Msg{4, 1, invalidGlobalVar})
+}
+
+func TestLintUnusedVariables(t *testing.T) {
+	input := `pkgname=foobar
+_foo=23
+_bar=42
+f1() {
+foo=lol
+}
+f2() {
+echo $_bar
+}`
+
+	l := newLinter(input)
+	l.lintUnusedVariables()
+
+	expMsg(t,
+		Msg{2, 1, fmt.Sprintf(variableUnused, "_foo")},
+		Msg{5, 1, fmt.Sprintf(variableUnused, "foo")})
 }
 
 func TestLintGlobalCmdSubsts(t *testing.T) {
