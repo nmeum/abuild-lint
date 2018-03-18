@@ -7,10 +7,10 @@ import (
 )
 
 var (
-	// IsName checks if the given string is a valid name in the
-	// shell command language as defined in section 3.235 of the
-	// POSIX base specification.
-	IsName = regexp.MustCompile("^[_A-Za-z0-9]+$").MatchString
+	// IsName checks if the given string could be a part of a name
+	// in the shell command language as defined in section 3.235 of
+	// the POSIX base specification.
+	IsNamePart = regexp.MustCompile("^[_A-Za-z0-9]+$").MatchString
 )
 
 // IsSpace reports whether the rune is an ascii space character. This

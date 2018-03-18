@@ -299,7 +299,7 @@ func (l *Linter) lintParamExpression() {
 			if n < nparts-1 {
 				next := word.Parts[n+1]
 				lit, ok := next.(*syntax.Lit)
-				if !ok || IsName(lit.Value) {
+				if !ok || IsNamePart(lit.Value) {
 					continue
 				}
 			}
