@@ -118,7 +118,7 @@ func (l *Linter) Lint() bool {
 func (l *Linter) lintComments() {
 	l.f.Walk(func(node syntax.Node) bool {
 		c, ok := node.(*syntax.Comment)
-		if ok && !strings.HasPrefix(c.Text, " ") {
+		if ok && c.Text != "" && !strings.HasPrefix(c.Text, " ") {
 			l.error(node.Pos(), badCommentPrefix)
 		}
 

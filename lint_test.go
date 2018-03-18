@@ -131,6 +131,7 @@ func expMsg(t *testing.T, msgs ...Msg) {
 
 func TestLintComments(t *testing.T) {
 	input := `#barfoo
+#
 # foobar
 #	bazbar
 #foobaz`
@@ -140,8 +141,8 @@ func TestLintComments(t *testing.T) {
 
 	expMsg(t,
 		Msg{1, 1, badCommentPrefix},
-		Msg{3, 1, badCommentPrefix},
-		Msg{4, 1, badCommentPrefix})
+		Msg{4, 1, badCommentPrefix},
+		Msg{5, 1, badCommentPrefix})
 }
 
 func TestLintAddressComments(t *testing.T) {
