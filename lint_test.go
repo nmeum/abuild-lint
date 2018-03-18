@@ -257,6 +257,9 @@ echo $_bar
 }
 f3() {
 FOO=bar make
+}
+f4() {
+export ENV=42
 }`
 
 	l := newLinter(input)

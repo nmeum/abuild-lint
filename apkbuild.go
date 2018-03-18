@@ -81,6 +81,17 @@ func (a *APKBUILD) IsUnusedVar(varname string) bool {
 	ret := true
 	a.Walk(func(node syntax.Node) bool {
 		switch x := node.(type) {
+		case *syntax.DeclClause:
+			if x.Variant.Value != "export" {
+				return true
+			}
+
+			for _, a := range x.Assigns {
+				if a.Name.Value == varname {
+					ret = false
+					return false
+				}
+			}
 		case *syntax.SglQuoted:
 			if x.Dollar && x.Value == varname {
 				ret = false
