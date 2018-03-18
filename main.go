@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -12,10 +11,8 @@ const (
 )
 
 func main() {
-	flag.Parse()
-
 	var fns []string
-	if flag.NArg() == 0 {
+	if len(os.Args) <= 1 {
 		if !Exists(pkgbuildfn) {
 			fmt.Fprintf(os.Stderr, "%q doesn't exists in current directory.\n", pkgbuildfn)
 			os.Exit(1)
@@ -23,7 +20,7 @@ func main() {
 
 		fns = []string{pkgbuildfn}
 	} else {
-		for _, arg := range flag.Args() {
+		for _, arg := range os.Args[1:] {
 			if IsDir(arg) {
 				arg = filepath.Join(arg, pkgbuildfn)
 			}
