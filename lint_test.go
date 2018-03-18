@@ -43,9 +43,9 @@ func (p byPos) Less(i, j int) bool {
 	lj, cj, _ := parseLine(linej)
 	if li == lj {
 		return ci < cj
-	} else {
-		return li < lj
 	}
+
+	return li < lj
 }
 
 func setup() {

@@ -18,16 +18,23 @@ const (
 	contributorPrefix = " Contributor:"
 )
 
+// metaPos describes the position of a metadata variable in an APKBUILD.
 type metaPos int
 
 const (
+	// Metadata variable must be declared before the first function
+	// declaration.
 	beforeFuncs metaPos = iota
+
+	// Metadata variable must be declared after the last function
+	// declaration.
 	afterFuncs
 )
 
+// metadata represents an APKBUILD metadata variable.
 type metadata struct {
-	p metaPos
-	r bool
+	p metaPos // Position of the metadata variable
+	r bool    // Whether the metadata variable is required
 }
 
 // Array containing all variables which are directly used by
@@ -74,8 +81,8 @@ var metadataVariables = map[string]metadata{
 }
 
 // Array containing all functions which can be declared by an APKBUILD
-// and are then called from abuild(1). The function should be added in
-// the order they are called by abuild(1).
+// and are then called from abuild(1). The elements of the array should
+// be sorted by invocation time.
 var packageFunctions = []string{
 	"sanitycheck",
 	"snapshot",
@@ -87,16 +94,21 @@ var packageFunctions = []string{
 	"package",
 }
 
+// addressComment represents a comment which prefixed with a certain
+// string and contains an RFC 5322 address.
 type addressComment struct {
-	c syntax.Comment
-	a *mail.Address
+	c syntax.Comment // Comment containing the address
+	a *mail.Address  // RFC 5322 address contained in the comment
 }
 
+// Linter lints Alpine Linux APKBUILDs.
 type Linter struct {
-	v bool
-	f *APKBUILD
+	v bool      // Whether a style violation was found
+	f *APKBUILD // APKBUILD which should be checked
 }
 
+// Lint performs all linter checks and reports whether it found any
+// style violations.
 func (l *Linter) Lint() bool {
 	l.lintComments()
 	l.lintMaintainerAndContributors()
@@ -257,9 +269,9 @@ func (l *Linter) lintLocalVariables() {
 	}
 }
 
-// lintParamExpression checks for long parameter expansion with the form
+// lintParamExpression checks for long parameter expansion of the form
 // ${…} and checks if they can be replaced by a semantically equivalent
-// short parameter expansion with a $… form.
+// short parameter expansion of the $… form.
 func (l *Linter) lintParamExpression() {
 	var words []*syntax.Word
 	l.f.Walk(func(node syntax.Node) bool {

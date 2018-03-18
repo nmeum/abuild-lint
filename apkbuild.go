@@ -13,6 +13,7 @@ const (
 	lang = syntax.LangBash
 )
 
+// APKBUILD represents an Alpine Linux APKBUILD.
 type APKBUILD struct {
 	// Root node of the AST.
 	prog *syntax.File
@@ -27,6 +28,8 @@ type APKBUILD struct {
 	Functions map[string]syntax.FuncDecl
 }
 
+// Parse reads and parses an Alpine Linux APKBUILD. The name will be
+// used in error messages emitted for this APKBUILD.
 func Parse(r io.Reader, name string) (*APKBUILD, error) {
 	parser := syntax.NewParser(syntax.KeepComments,
 		syntax.Variant(lang))
@@ -43,10 +46,13 @@ func Parse(r io.Reader, name string) (*APKBUILD, error) {
 	return &apkbuild, nil
 }
 
+// Name returns the name supplied to the parse function.
 func (a *APKBUILD) Name() string {
 	return a.prog.Name
 }
 
+// Walk traverses the underlying AST of the APKBUILD in depth-first
+// order. It's just a wrapper function around syntax.Walk.
 func (a *APKBUILD) Walk(f func(syntax.Node) bool) {
 	syntax.Walk(a.prog, f)
 }
@@ -69,6 +75,8 @@ func (a *APKBUILD) visit(node syntax.Node) bool {
 	}
 }
 
+// IsGlobalVar checks if the supplied name responds to a global
+// variable declaration.
 func (a *APKBUILD) IsGlobalVar(varname string) bool {
 	for _, assignment := range a.Assignments {
 		if assignment.Name.Value == varname {
@@ -79,6 +87,9 @@ func (a *APKBUILD) IsGlobalVar(varname string) bool {
 	return false
 }
 
+// IsUnusedVar checks if the variable with the supplied name is unused
+// in the APKBUILD. It also returns true if the given variable is an
+// environment variable.
 func (a *APKBUILD) IsUnusedVar(varname string) bool {
 	ret := true
 	a.Walk(func(node syntax.Node) bool {
