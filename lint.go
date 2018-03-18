@@ -457,6 +457,8 @@ func (l *Linter) lintAddressComments(prefix string) (int, []addressComment) {
 	return amount, comments
 }
 
+// isValidVarScope reports whether the given literal is included in the
+// given string slice or if it is a global or metadata variable.
 func (l *Linter) isValidVarScope(vars []string, v *syntax.Lit) bool {
 	if IsIncluded(vars, v.Value) {
 		return true
@@ -469,6 +471,8 @@ func (l *Linter) isValidVarScope(vars []string, v *syntax.Lit) bool {
 	return true
 }
 
+// errof formats a style violation at the given position according to
+// format and writes it to the writer associated with the linter.
 func (l *Linter) errorf(pos syntax.Pos, format string,
 	argv ...interface{}) {
 	l.v = true // Linter found a style violation
@@ -482,6 +486,9 @@ func (l *Linter) errorf(pos syntax.Pos, format string,
 		fmt.Sprintf(format, argv...))
 }
 
+// error formats a style violation at the given position using the
+// default formats and writes it to the writer associated with the
+// linter.
 func (l *Linter) error(pos syntax.Pos, str string) {
 	l.errorf(pos, "%s", str)
 }

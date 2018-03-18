@@ -7,6 +7,7 @@ import (
 )
 
 const (
+	// File name used for Alpine Linux APKBUILDs.
 	pkgbuildfn = "APKBUILD"
 )
 
