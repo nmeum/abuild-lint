@@ -70,7 +70,7 @@ var metadataVariables = map[string]metadata{
 	"patch_args":        {beforeFuncs, false},
 	"md5sums":           {afterFuncs, false},
 	"sha256sums":        {afterFuncs, false},
-	"sha512sums":        {afterFuncs, true},
+	"sha512sums":        {afterFuncs, false},
 }
 
 // Array containing all functions which can be declared by an APKBUILD
