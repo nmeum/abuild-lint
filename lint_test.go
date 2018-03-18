@@ -236,7 +236,8 @@ func TestListGlobalVariables(t *testing.T) {
 	input := `pkgname=foobar
 foo=42
 _foo=9001
-__foo=bar`
+__foo=bar
+export ENV=23`
 
 	l := newLinter(input)
 	l.lintGlobalVariables()

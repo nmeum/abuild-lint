@@ -20,7 +20,7 @@ type APKBUILD struct {
 	// Globally declared comments.
 	Comments []syntax.Comment
 
-	// Global variable assignments.
+	// Global variable assignments excluding environment variables.
 	Assignments []syntax.Assign
 
 	// Declared functions.
@@ -53,6 +53,8 @@ func (a *APKBUILD) Walk(f func(syntax.Node) bool) {
 
 func (a *APKBUILD) visit(node syntax.Node) bool {
 	switch x := node.(type) {
+	case *syntax.DeclClause:
+		return x.Variant.Value != "export"
 	case *syntax.FuncDecl:
 		a.Functions[x.Name.Value] = *x
 		return false // All nodes after this have local scope
