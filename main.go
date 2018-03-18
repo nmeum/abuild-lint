@@ -52,7 +52,7 @@ func main() {
 
 	exitStatus := 0
 	for _, abuild := range abuilds {
-		linter := Linter{f: abuild}
+		linter := Linter{f: abuild, w: os.Stdout}
 		if linter.Lint() {
 			exitStatus = 1
 		}

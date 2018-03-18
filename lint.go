@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"mvdan.cc/sh/syntax"
 	"net/mail"
-	"os"
 	"strings"
 )
 
@@ -104,6 +104,7 @@ type addressComment struct {
 // Linter lints Alpine Linux APKBUILDs.
 type Linter struct {
 	v bool      // Whether a style violation was found
+	w io.Writer // Writer to use for reporting violations
 	f *APKBUILD // APKBUILD which should be checked
 }
 
@@ -477,7 +478,7 @@ func (l *Linter) errorf(pos syntax.Pos, format string,
 		prefix += ":" + pos.String()
 	}
 
-	fmt.Fprintf(os.Stderr, "%s: %s\n", prefix,
+	fmt.Fprintf(l.w, "%s: %s\n", prefix,
 		fmt.Sprintf(format, argv...))
 }
 

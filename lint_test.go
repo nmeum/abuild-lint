@@ -12,8 +12,8 @@ import (
 
 const name = "Testinput"
 
-var stderrReader *os.File
-var stderrWriter *os.File
+var reader *os.File
+var writer *os.File
 
 type Msg struct {
 	l uint
@@ -50,11 +50,10 @@ func (p byPos) Less(i, j int) bool {
 
 func setup() {
 	var err error
-	stderrReader, stderrWriter, err = os.Pipe()
+	reader, writer, err = os.Pipe()
 	if err != nil {
 		panic(err)
 	}
-	os.Stderr = stderrWriter
 }
 
 func parseLine(line string) (uint, uint, string) {
@@ -92,15 +91,15 @@ func newLinter(input string) *Linter {
 		panic(err)
 	}
 
-	linter := Linter{f: abuild}
+	linter := Linter{f: abuild, w: writer}
 	return &linter
 }
 
 func expMsg(t *testing.T, msgs ...Msg) {
-	stderrWriter.Close() // Write EOF
+	writer.Close() // Write EOF
 	defer setup()
 
-	data, err := ioutil.ReadAll(stderrReader)
+	data, err := ioutil.ReadAll(reader)
 	if err != nil {
 		t.Fatal("ioutil.ReadAll failed:", err)
 	}
