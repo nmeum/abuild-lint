@@ -102,13 +102,14 @@ func expMsg(t *testing.T, msgs ...Msg) {
 
 	data, err := ioutil.ReadAll(stderrReader)
 	if err != nil {
-		t.Fail()
+		t.Fatal("ioutil.ReadAll failed:", err)
 	}
 
 	str := string(data)
 	lines := strings.Split(str[0:len(str)-1], "\n")
 	if len(msgs) != len(lines) {
-		t.Fail()
+		t.Fatalf("Expected %d violations, got %d",
+			len(msgs), len(lines))
 	}
 
 	// Output of some linter functions is non-deterministic,
