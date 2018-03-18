@@ -389,8 +389,7 @@ func (l *Linter) lintBashisms() {
 				l.errorf(x.Variant.Pos(), forbiddenBashism, v)
 			}
 		case *syntax.ParamExp:
-			if x.Excl || x.Length || x.Width ||
-				x.Index != nil || x.Slice != nil {
+			if x.Excl || x.Length || x.Width || x.Index != nil {
 				l.errorf(x.Pos(), forbiddenBashism, "advanced parameter expression")
 			}
 		case *syntax.ForClause:
