@@ -1,24 +1,35 @@
+NAME = abuild-lint
+VER  = 0.5
+
 PREFIX ?= /usr/local
 BINDIR ?= $(PREFIX)/bin
 MANDIR ?= $(PREFIX)/share/man
-DOCDIR ?= $(PREFIX)/doc/abuild-lint
+DOCDIR ?= $(PREFIX)/doc/$(NAME)
 
-IMPORTPATH=src/github.com/nmeum/abuild-lint
+IMPORTPATH=src/github.com/nmeum/$(NAME)
 export GOPATH=$(CURDIR)
 
-all: abuild-lint
+all: $(NAME)
 $(IMPORTPATH): $(GOPATH)
 	mkdir -p $(shell dirname $@)
 	ln -fs $< $@
 
 check: $(IMPORTPATH)
 	cd $< && go test
-abuild-lint: $(IMPORTPATH)
+$(NAME): $(IMPORTPATH)
 	cd $< && go build -o $@
 
-install: abuild-lint abuild-lint.1 README.md
-	install -Dm755 abuild-lint "$(DESTDIR)$(BINDIR)/abuild-lint"
-	install -Dm644 abuild-lint.1 "$(DESTDIR)$(MANDIR)/man1/abuild-lint.1"
+install: $(NAME) $(NAME).1 README.md
+	install -Dm755 $(NAME) "$(DESTDIR)$(BINDIR)/$(NAME)"
+	install -Dm644 $(NAME).1 "$(DESTDIR)$(MANDIR)/man1/$(NAME).1"
 	install -Dm644 README.md "$(DESTDIR)$(DOCDIR)/README.md"
 
-.PHONY: all check install
+dist:
+	mkdir -p $(NAME)-$(VER)
+	cp -R $(wildcard *.go) $(wildcard *.md) GNUmakefile \
+		$(NAME).1 vendor $(NAME)-$(VER)
+	find $(NAME)-$(VER) -name '.git' -exec rm -rf {} +
+	tar -cJf $(NAME)-$(VER).tar.xz $(NAME)-$(VER)
+	rm -rf $(NAME)-$(VER)
+
+.PHONY: all check install dist
