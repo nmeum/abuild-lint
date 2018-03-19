@@ -32,4 +32,4 @@ dist:
 	tar -czf $(NAME)-$(VER).tar.gzip $(NAME)-$(VER)
 	rm -rf $(NAME)-$(VER)
 
-.PHONY: all check install dist
+.PHONY: all check install dist $(NAME)
