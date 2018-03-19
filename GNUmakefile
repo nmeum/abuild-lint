@@ -4,7 +4,7 @@ VER  = 0.5
 PREFIX ?= /usr/local
 BINDIR ?= $(PREFIX)/bin
 MANDIR ?= $(PREFIX)/share/man
-DOCDIR ?= $(PREFIX)/doc/$(NAME)
+DOCDIR ?= $(PREFIX)/share/doc/$(NAME)
 
 IMPORTPATH=src/github.com/nmeum/$(NAME)
 export GOPATH=$(CURDIR)
@@ -29,7 +29,7 @@ dist:
 	cp -R $(wildcard *.go) $(wildcard *.md) GNUmakefile \
 		$(NAME).1 vendor $(NAME)-$(VER)
 	find $(NAME)-$(VER) -name '.git' -exec rm -rf {} +
-	tar -cJf $(NAME)-$(VER).tar.xz $(NAME)-$(VER)
+	tar -czf $(NAME)-$(VER).tar.gzip $(NAME)-$(VER)
 	rm -rf $(NAME)-$(VER)
 
 .PHONY: all check install dist
